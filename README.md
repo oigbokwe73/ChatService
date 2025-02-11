@@ -45,38 +45,6 @@ Content-Type: application/json
 - After validation, the function **logs the request** for observability in **Azure Monitor**.
 - If the request passes validation, the function **forwards it to Azure Service Bus**.
 
-```python
-import azure.functions as func
-import json
-from azure.servicebus import ServiceBusClient, ServiceBusMessage
-
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    req_body = req.get_json()
-    
-    sender = req_body.get("SenderID")
-    receiver = req_body.get("ReceiverID")
-    message = req_body.get("MessageText")
-    timestamp = req_body.get("Timestamp")
-    
-    # Basic validation
-    if not sender or not receiver or not message:
-        return func.HttpResponse("Invalid request", status_code=400)
-    
-    # Publish message to Azure Service Bus
-    servicebus_client = ServiceBusClient.from_connection_string("your_connection_string")
-    sender_queue = servicebus_client.get_queue_sender(queue_name="chat-queue")
-    
-    chat_message = {
-        "SenderID": sender,
-        "ReceiverID": receiver,
-        "MessageText": message,
-        "Timestamp": timestamp
-    }
-    
-    sender_queue.send_messages(ServiceBusMessage(json.dumps(chat_message)))
-    
-    return func.HttpResponse("Message sent successfully", status_code=200)
-```
 
 ---
 
@@ -111,41 +79,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
   - If **recipient is online**, the message is pushed to the client in real-time.
   - If **recipient is offline**, the message is persisted in **Azure SQL Database** or **Azure Table Storage**.
 
-**Azure Function Code for Processing Messages:**
-```python
-import azure.functions as func
-import json
-from azure.data.tables import TableServiceClient
-
-def main(msg: func.ServiceBusMessage):
-    chat_data = json.loads(msg.get_body().decode('utf-8'))
-    
-    sender = chat_data["SenderID"]
-    receiver = chat_data["ReceiverID"]
-    message = chat_data["MessageText"]
-    timestamp = chat_data["Timestamp"]
-
-    # Check if the recipient is online (mock check)
-    is_online = check_user_status(receiver)
-
-    if is_online:
-        send_to_websocket(receiver, chat_data)
-    else:
-        # Store message in Azure Table Storage
-        save_message_to_table(sender, receiver, message, timestamp)
-
-def save_message_to_table(sender, receiver, message, timestamp):
-    table_service = TableServiceClient(account_url="https://yourstorageaccount.table.core.windows.net", credential="your_key")
-    table_client = table_service.get_table_client(table_name="ChatMessages")
-
-    entity = {
-        "PartitionKey": receiver, 
-        "RowKey": timestamp.replace(":", "-"),
-        "SenderID": sender,
-        "MessageText": message
-    }
-    table_client.upsert_entity(entity)
-```
 
 ---
 
@@ -165,9 +98,9 @@ def save_message_to_table(sender, receiver, message, timestamp):
 ```mermaid
 sequenceDiagram
     participant User as User (Mobile/Web App)
-    participant FunctionHTTP as Azure Function (HTTP Trigger)
-    participant ServiceBus as Azure Service Bus Queue
-    participant FunctionBus as Azure Function (Service Bus Trigger)
+    participant FunctionHTTP as REST Function (HTTP Trigger)
+    participant ServiceBus as Service Bus Queue
+    participant FunctionBus as Function (Service Bus Trigger)
     participant TableStorage as Azure Table Storage
     participant SQL as Azure SQL Database
 
