@@ -94,7 +94,7 @@ Content-Type: application/json
 
 ---
 
-## **Mermaid Diagram for Steps 1-5**
+## **Mermaid Diagram**
 ```mermaid
 sequenceDiagram
     participant User as User (Mobile/Web App)
