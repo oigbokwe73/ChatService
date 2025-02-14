@@ -122,6 +122,13 @@ sequenceDiagram
     end
 ```
 
+## **Key Takeaways**
+1. **Event-Driven Approach**: Azure Functions and Service Bus ensure high scalability.
+2. **Asynchronous Processing**: Messages are enqueued and processed reliably.
+3. **Storage Options**: Table Storage for NoSQL access, Azure SQL for structured queries.
+4. **Real-Time Delivery**: WebSockets notify users instantly if they’re online.
+5. **Offline Persistence**: Messages are stored for offline users and retrieved later.
+
 
 ## **Database Tables **
 
@@ -321,15 +328,5 @@ This schema provides a **highly scalable Twitter-like chat and messaging system*
 - **Media uploads (images, videos, GIFs)**
 - **Notifications for user interactions**
 
-Would you like to extend this with **Stored Procedures** for message retrieval or **SQL Triggers** for real-time notifications? 🚀
 
----
 
-## **Key Takeaways**
-1. **Event-Driven Approach**: Azure Functions and Service Bus ensure high scalability.
-2. **Asynchronous Processing**: Messages are enqueued and processed reliably.
-3. **Storage Options**: Table Storage for NoSQL access, Azure SQL for structured queries.
-4. **Real-Time Delivery**: WebSockets notify users instantly if they’re online.
-5. **Offline Persistence**: Messages are stored for offline users and retrieved later.
-
-Would you like further details on **WebSocket integration or message retrieval workflows**? 🚀
