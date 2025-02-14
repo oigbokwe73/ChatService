@@ -1,7 +1,7 @@
 # ChatService
 
 
-### **Detailed Expansion of Steps 1-5 in the Chat Messaging System**
+### **Chat Messaging System**
 
 This section provides an in-depth look at the first five steps of the chat messaging system, covering how a message is **ingested, processed, and stored** before being delivered to its intended recipient.
 
