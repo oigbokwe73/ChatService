@@ -316,6 +316,80 @@ CREATE TABLE Notifications (
    CREATE INDEX idx_followers ON Followers(FollowerID, FollowingID);
    ```
 
+
+   To verify a password in **Azure SQL Database**, we need to:  
+1. **Retrieve** the stored hashed password and salt from the database.  
+2. **Recreate the hash** using the provided plaintext password and the stored salt.  
+3. **Compare** the computed hash with the stored hash.  
+
+---
+
+### **Stored Procedure to Verify a Password**
+```sql
+CREATE PROCEDURE VerifyPassword
+    @UserId INT,
+    @PlainTextPassword NVARCHAR(256),
+    @IsValid BIT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Retrieve stored hashed password and salt for the user
+    DECLARE @StoredHashedPassword NVARCHAR(128);
+    DECLARE @StoredSalt NVARCHAR(64);
+
+    SELECT @StoredHashedPassword = HashedPassword, @StoredSalt = Salt
+    FROM Users
+    WHERE UserId = @UserId;
+
+    -- If user not found, return invalid
+    IF @StoredHashedPassword IS NULL OR @StoredSalt IS NULL
+    BEGIN
+        SET @IsValid = 0;
+        RETURN;
+    END
+
+    -- Recreate the hashed password using stored salt
+    DECLARE @ComputedHash VARBINARY(64) = HASHBYTES('SHA2_512', @PlainTextPassword + @StoredSalt);
+    DECLARE @ComputedHashHex NVARCHAR(128) = CONVERT(NVARCHAR(128), @ComputedHash, 1);
+
+    -- Compare stored and computed hashes
+    IF @ComputedHashHex = @StoredHashedPassword
+        SET @IsValid = 1;
+    ELSE
+        SET @IsValid = 0;
+END;
+```
+
+---
+
+### **How It Works**
+1. **Retrieve the hashed password and salt** for the given `UserId` from the **Users** table.
+2. If the **user doesn't exist**, return `@IsValid = 0` (Invalid).
+3. **Compute the hash** using the stored salt and the provided plaintext password.
+4. **Compare** the computed hash with the stored hash.
+5. If they match, set `@IsValid = 1`, otherwise, set `@IsValid = 0`.
+
+---
+
+### **Usage Example**
+To check if the password is valid:
+```sql
+DECLARE @IsValid BIT;
+EXEC VerifyPassword @UserId = 1, @PlainTextPassword = 'MySecurePass123!', @IsValid = @IsValid OUTPUT;
+
+SELECT @IsValid AS IsPasswordValid; -- 1 = Valid, 0 = Invalid
+```
+
+---
+
+### **Expected Output**
+| IsPasswordValid |
+|----------------|
+| 1 (if correct) or 0 (if incorrect) |
+
+This procedure helps authenticate users securely in **Azure SQL Database**! 🚀 Let me know if you need modifications!
+
 ---
 
 ## **Final Thoughts**
