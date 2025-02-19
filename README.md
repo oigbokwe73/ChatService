@@ -396,7 +396,6 @@ CREATE TABLE Users (
 EXEC SaltAndHashPassword @UserId = 1, @PlainTextPassword = 'MySecurePass123!';
 ```
 
-Let me know if you need modifications! 🚀
 
 ### **Stored Procedure to Verify a Password**
 ```sql
@@ -462,7 +461,7 @@ SELECT @IsValid AS IsPasswordValid; -- 1 = Valid, 0 = Invalid
 |----------------|
 | 1 (if correct) or 0 (if incorrect) |
 
-This procedure helps authenticate users securely in **Azure SQL Database**! 🚀 Let me know if you need modifications!
+This procedure helps authenticate users securely in **Azure SQL Database**! 
 
 ---
 
