@@ -324,6 +324,80 @@ CREATE TABLE Notifications (
 
 ---
 
+Here’s a stored procedure to hash and salt passwords in **Azure SQL Database** using **SHA2_512** hashing. This procedure ensures secure storage of user passwords by adding a random salt before hashing.
+
+---
+
+### **Stored Procedure to Salt and Hash Passwords**
+```sql
+CREATE PROCEDURE SaltAndHashPassword
+    @UserId INT,
+    @PlainTextPassword NVARCHAR(256)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Generate a random salt (16 bytes, converted to HEX)
+    DECLARE @Salt VARBINARY(16) = CRYPT_GEN_RANDOM(16);
+
+    -- Convert salt to a HEX string for storage
+    DECLARE @SaltHex NVARCHAR(64) = CONVERT(NVARCHAR(64), @Salt, 1);
+
+    -- Concatenate password with salt and hash using SHA2_512
+    DECLARE @HashedPassword VARBINARY(64) = HASHBYTES('SHA2_512', @PlainTextPassword + @SaltHex);
+
+    -- Convert the hashed password to a HEX string for storage
+    DECLARE @HashedPasswordHex NVARCHAR(128) = CONVERT(NVARCHAR(128), @HashedPassword, 1);
+
+    -- Update or Insert into the Users table
+    UPDATE Users
+    SET HashedPassword = @HashedPasswordHex, Salt = @SaltHex
+    WHERE UserId = @UserId;
+
+    IF @@ROWCOUNT = 0
+    BEGIN
+        INSERT INTO Users (UserId, HashedPassword, Salt)
+        VALUES (@UserId, @HashedPasswordHex, @SaltHex);
+    END
+END;
+```
+
+---
+
+### **Explanation**
+1. **Generate a Salt:**  
+   - Uses `CRYPT_GEN_RANDOM(16)` to generate a 16-byte salt.
+   - Converts it to a HEX string for easy storage.
+
+2. **Hashing the Password:**  
+   - Concatenates the plaintext password with the salt.
+   - Uses `HASHBYTES('SHA2_512', password + salt)` for hashing.
+
+3. **Storing the Hash & Salt:**  
+   - Converts both hash and salt to **HEX strings**.
+   - Updates the existing user’s password or inserts a new record.
+
+---
+
+### **User Table Schema**
+Ensure your **Users** table includes the necessary columns:
+```sql
+CREATE TABLE Users (
+    UserId INT PRIMARY KEY,
+    HashedPassword NVARCHAR(128) NOT NULL,
+    Salt NVARCHAR(64) NOT NULL
+);
+```
+
+---
+
+### **Usage Example**
+```sql
+EXEC SaltAndHashPassword @UserId = 1, @PlainTextPassword = 'MySecurePass123!';
+```
+
+Let me know if you need modifications! 🚀
+
 ### **Stored Procedure to Verify a Password**
 ```sql
 CREATE PROCEDURE VerifyPassword
